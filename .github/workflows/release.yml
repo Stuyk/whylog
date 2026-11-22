@@ -1,11 +1,10 @@
 name: release
 
-# Cut a release from the CLI:
-#   make release V=0.2.0          # bumps Cargo.toml, commits, tags v0.2.0, pushes
-# or by hand:
-#   git tag v0.2.0 && git push origin v0.2.0
-# The tag must match the version in Cargo.toml. Binaries for linux/macOS/windows
-# (amd64 + arm64) and checksums.txt are attached to the GitHub Release.
+# Cut a release from the CLI by pushing a tag:
+#   git tag v1.0.1 && git push origin v1.0.1
+# The tag is the version. The workflow stamps it into Cargo.toml before building, so the
+# binary reports it (`whylog version`). Binaries for linux/macOS/windows (amd64 + arm64) and
+# checksums.txt are attached to the GitHub Release.
 
 on:
   push:
@@ -26,12 +25,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: v
-        name: Tag matches Cargo.toml
+        name: Version from tag
         run: |
           tag="${GITHUB_REF_NAME#v}"
+          [[ "$tag" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]] || { echo "::error::tag $GITHUB_REF_NAME is not v<semver> (e.g. v1.0.1)"; exit 1; }
           cargo_v="$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -n1)"
-          [[ "$tag" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]] || { echo "::error::tag $GITHUB_REF_NAME is not v<semver>"; exit 1; }
-          [ "$tag" = "$cargo_v" ] || { echo "::error::tag $tag != Cargo.toml version $cargo_v"; exit 1; }
+          [ "$tag" = "$cargo_v" ] || echo "::notice::Cargo.toml says $cargo_v; building as $tag from the tag"
           echo "version=$tag" >> "$GITHUB_OUTPUT"
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo test
@@ -57,7 +56,10 @@ jobs:
           targets: ${{ matrix.target }}
       - if: matrix.musl
         run: sudo apt-get update && sudo apt-get install -y musl-tools
-      - run: cargo build --release --locked --target ${{ matrix.target }}
+      - name: Stamp version from tag
+        shell: bash
+        run: perl -pi -e 's/^version = ".*"/version = "${{ needs.verify.outputs.version }}"/ if $. < 10' Cargo.toml
+      - run: cargo build --release --target ${{ matrix.target }}
       - name: Package
         shell: bash
         run: |

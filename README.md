@@ -197,11 +197,12 @@ Session files are plain markdown. Any script can read them without going through
 ## Releasing
 
 ```sh
-make release V=0.2.0
+git tag v1.0.2 && git push origin v1.0.2
 ```
 
-Bumps the version, commits, tags `v0.2.0` and pushes. The tag kicks off a GitHub workflow
-that tests everything, builds every platform and publishes the release.
+The tag is the version. Pushing it kicks off a GitHub workflow that stamps the version,
+tests everything, builds every platform and publishes the release. `make release V=1.0.2`
+does the same and also bumps `Cargo.toml` so local builds match.
 
 ## License
 

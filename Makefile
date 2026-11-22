@@ -21,9 +21,10 @@ smoke:
 	grep -q "## Compaction" DECISIONS.md && grep -q "whylog:compacted-through $$thr" DECISIONS.md && \
 	test -z "$$(ls .whylog/sessions)" && echo "smoke ok" && cd / && rm -rf "$$dir"
 
-# Cut a release from the CLI: make release V=0.2.0
-# Bumps Cargo.toml, commits, creates tag vX.Y.Z and pushes both; the tag triggers
-# .github/workflows/release.yml, which builds and publishes every platform.
+# Cut a release from the CLI: make release V=1.0.2
+# Bumps Cargo.toml (so local builds match), commits, creates tag vX.Y.Z and pushes both.
+# The tag triggers .github/workflows/release.yml. Pushing a tag by hand works too:
+# the workflow takes the version from the tag.
 release:
 	@test -n "$(V)" || (echo "usage: make release V=X.Y.Z"; exit 1)
 	@git diff --quiet && git diff --cached --quiet || (echo "commit or stash changes first"; exit 1)
