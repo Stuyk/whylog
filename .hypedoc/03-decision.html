@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Anatomy of a decision: the rule, and the reason it exists</title>
+<meta name="hypedoc:width" content="960">
+<style>
+  :root {
+    --paper: #14161b; --ink: #f2f3f5; --muted: #9aa1ab; --line: #272b33;
+    --term: #0c0e12; --term-line: #252932; --sheet: #0c0e12;
+    --accent: #F5A9B8; --blue: #5BCEFA; --ok: #5BCEFA;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Inter, Roboto, sans-serif; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+  .card { background: var(--paper); color: var(--ink); border: 1px solid var(--line); border-radius: 14px; padding: 40px 44px 44px; }
+  h2 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin: 0 0 8px; }
+  .intro { font-size: 17px; color: var(--muted); margin: 0 0 30px; }
+  .line { background: var(--sheet); border: 1px solid var(--line); border-radius: 10px; padding: 22px 26px; font-size: 18px; white-space: nowrap; }
+  .rule { font-weight: 700; }
+  .why { font-style: italic; color: var(--accent); }
+  .sep { color: var(--muted); }
+  .notes { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 22px; }
+  .note { border-top: 2px solid var(--line); padding-top: 12px; }
+  .note.r { border-top-color: var(--blue); }
+  .note.r .k { color: var(--blue); }
+  .note.w { border-top-color: var(--accent); }
+  .k { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+  .note.w .k { color: var(--accent); }
+  .v { font-size: 17px; line-height: 1.5; margin-top: 6px; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h2>A rule without a reason gets ignored.</h2>
+    <p class="intro">So every decision carries both. One line each.</p>
+    <div class="line mono">
+      <span class="sep">-</span> <span class="rule">**No retries in the HTTP client**</span> <span class="sep">-</span> <span class="why">*they caused duplicate writes*</span>
+    </div>
+    <div class="notes">
+      <div class="note r">
+        <div class="k">The rule</div>
+        <div class="v">Something the next agent has to follow. A convention, a removal, a revert, "we do X, not Y".</div>
+      </div>
+      <div class="note w">
+        <div class="k">The reason</div>
+        <div class="v">The part that matters. With it, an agent respects the rule or asks you first. Without it, it argues.</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

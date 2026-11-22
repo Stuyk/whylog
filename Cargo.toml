@@ -9,6 +9,7 @@ repository = "https://github.com/stuyk/whylog"
 readme = "README.md"
 keywords = ["ai", "agents", "decisions", "adr", "cli"]
 categories = ["command-line-utilities", "development-tools"]
+exclude = [".hypedoc/", ".github/", "docs/"]
 
 [dependencies]
 

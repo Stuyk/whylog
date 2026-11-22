@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>whylog: agents forget, whylog writes it down</title>
+<meta name="hypedoc:width" content="960">
+<style>
+  :root {
+    --paper: #14161b; --ink: #f2f3f5; --muted: #9aa1ab; --line: #272b33;
+    --term: #0c0e12; --term-line: #252932; --sheet: #0c0e12;
+    --accent: #F5A9B8; --blue: #5BCEFA; --ok: #5BCEFA;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Inter, Roboto, sans-serif; }
+  .card {
+    background: var(--paper); color: var(--ink); border: 1px solid var(--line);
+    border-radius: 14px; padding: 48px 52px; display: grid;
+    grid-template-columns: 0.9fr 1.25fr; gap: 40px; align-items: center;
+  }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+  .name { font-size: 56px; font-weight: 750; letter-spacing: -2px; margin: 0 0 18px; }
+  .name span { color: var(--accent); }
+  .lede { font-size: 22px; line-height: 1.45; margin: 0 0 22px; }
+  .lede b { font-weight: 650; }
+  .small { font-size: 16px; line-height: 1.5; color: var(--muted); margin: 0; }
+  .term {
+    background: var(--term); border: 1px solid var(--term-line); border-radius: 10px;
+    padding: 18px 22px 20px; font-size: 14.5px; line-height: 1.7; white-space: nowrap;
+  }
+  .dots { display: flex; gap: 6px; margin-bottom: 14px; }
+  .dots i { width: 10px; height: 10px; border-radius: 50%; display: block; }
+  .dots i:nth-child(1) { background: #5BCEFA; } .dots i:nth-child(2) { background: #F5A9B8; } .dots i:nth-child(3) { background: #ffffff; }
+  .p { color: var(--muted); }
+  .out { color: var(--muted); padding-left: 16px; }
+  .hl { color: var(--blue); }
+  .ok { color: var(--ok); }
+  .gap { height: 6px; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div>
+      <h1 class="name">why<span>log</span></h1>
+      <p class="lede">Agents forget everything. <b>whylog writes it down.</b></p>
+      <p class="small">Every task leaves a session. Every rule keeps its reason. The next agent reads both before it touches anything.</p>
+    </div>
+    <div class="term mono">
+      <div class="dots"><i></i><i></i><i></i></div>
+      <div><span class="p">$</span> whylog open "fix duplicate writes"</div>
+      <div class="out">opened <span class="hl">9f3a</span></div>
+      <div class="gap"></div>
+      <div><span class="p">$</span> whylog note 9f3a "POST retried on 429"</div>
+      <div class="gap"></div>
+      <div><span class="p">$</span> whylog decide 9f3a \</div>
+      <div class="out">"**No retries in the HTTP client**</div>
+      <div class="out">&nbsp;- *they caused duplicate writes*"</div>
+      <div class="gap"></div>
+      <div><span class="p">$</span> whylog close 9f3a --summary "no retries"</div>
+      <div class="out"><span class="ok">closed 9f3a</span> - 1 file, 1 decision</div>
+    </div>
+  </div>
+</body>
+</html>

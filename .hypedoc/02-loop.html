@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Sessions get compacted into one decision log that every agent reads first</title>
+<meta name="hypedoc:width" content="960">
+<style>
+  :root {
+    --paper: #14161b; --ink: #f2f3f5; --muted: #9aa1ab; --line: #272b33;
+    --term: #0c0e12; --term-line: #252932; --sheet: #0c0e12;
+    --accent: #F5A9B8; --blue: #5BCEFA; --ok: #5BCEFA;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Inter, Roboto, sans-serif; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+  .card { background: var(--paper); color: var(--ink); border: 1px solid var(--line); border-radius: 14px; padding: 40px 44px 36px; }
+  h2 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin: 0 0 30px; }
+  .row { display: grid; grid-template-columns: 1fr 48px 1fr 48px 1.2fr; align-items: start; }
+  .vis { height: 170px; display: flex; align-items: center; justify-content: center; width: 100%; }
+  .col { display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .label { margin-top: 18px; font-size: 17px; font-weight: 650; }
+  .sub { font-size: 15px; color: var(--muted); margin-top: 4px; }
+  .arrow { color: var(--muted); font-size: 26px; text-align: center; line-height: 170px; }
+
+  .stack { position: relative; width: 170px; height: 150px; }
+  .file {
+    position: absolute; width: 150px; height: 112px; background: var(--sheet);
+    border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; font-size: 14px;
+  }
+  .file .h { color: var(--blue); font-weight: 600; display: block; }
+  .file .l { height: 6px; background: var(--line); border-radius: 3px; margin-top: 9px; }
+  .f1 { left: 0; top: 0; } .f2 { left: 10px; top: 14px; } .f3 { left: 20px; top: 28px; }
+
+  .cmd {
+    background: var(--sheet); border: 1px solid var(--line); border-radius: 8px;
+    padding: 14px 16px; font-size: 16px;
+  }
+  .cmd .p { color: var(--muted); }
+
+  .log { width: 100%; white-space: nowrap; background: var(--sheet); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; font-size: 13px; line-height: 1.6; text-align: left; }
+  .log .t { font-weight: 700; margin-bottom: 4px; }
+  .log .d { color: var(--muted); }
+  .log .d b { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h2>One file per task. One log for everyone.</h2>
+    <div class="row">
+      <div class="col">
+        <div class="vis"><div class="stack mono">
+          <div class="file f1"><span class="h">c0cb</span><div class="l"></div><div class="l" style="width:70%"></div></div>
+          <div class="file f2"><span class="h">b851</span><div class="l"></div><div class="l" style="width:55%"></div></div>
+          <div class="file f3"><span class="h">9f3a</span><div class="l"></div><div class="l" style="width:80%"></div><div class="l" style="width:40%"></div></div>
+        </div></div>
+        <div class="label">Sessions</div>
+        <div class="sub">every task, any agent</div>
+      </div>
+      <div class="arrow">&rarr;</div>
+      <div class="col">
+        <div class="vis"><div class="cmd mono"><span class="p">$</span> whylog compact</div></div>
+        <div class="label">Compact</div>
+        <div class="sub">every 25 sessions</div>
+      </div>
+      <div class="arrow">&rarr;</div>
+      <div class="col">
+        <div class="vis"><div class="log mono">
+          <div class="t">DECISIONS.md</div>
+          <div class="d">- <b>No retries in the HTTP client</b></div>
+          <div class="d">- <b>Cache keys include the locale</b></div>
+          <div class="d">- <b>Migrations never drop columns</b></div>
+        </div></div>
+        <div class="label">Decision log</div>
+        <div class="sub">read before every change</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
