@@ -709,7 +709,7 @@ fn skill(a: &Args) -> R {
         .join("whylog");
     std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
     let path = dir.join("SKILL.md");
-    std::fs::write(&path, SKILL).map_err(|e| e.to_string())?;
+    std::fs::write(&path, SKILL.replace("\r\n", "\n")).map_err(|e| e.to_string())?;
     println!("installed {}", path.display());
     Ok(())
 }
@@ -794,7 +794,7 @@ fn agents_cmd(a: &Args, cfg: &Config) -> R {
         for t in &targets {
             let text = std::fs::read_to_string(t).unwrap_or_default();
             match agents::current(&text) {
-                Some(cur) if cur == block => {}
+                Some(cur) if cur.replace("\r\n", "\n") == block => {}
                 Some(_) => bad.push(format!("{} (stale block)", cfg.rel(t))),
                 None => bad.push(format!("{} (no whylog block)", cfg.rel(t))),
             }
@@ -912,9 +912,11 @@ mod tests {
     #[test]
     fn embedded_docs_ship_in_the_binary() {
         // include_str! compiles these into the binary; this guards against them going empty.
+        // Normalize line endings: a Windows checkout without .gitattributes would embed CRLF.
+        let skill = super::SKILL.replace("\r\n", "\n");
         assert!(super::STYLE.contains("No em-dashes"));
         assert!(super::GUIDE.contains("whylog style"));
-        assert!(super::SKILL.starts_with("---\nname: whylog"));
+        assert!(skill.starts_with("---\nname: whylog"));
     }
 
     #[test]

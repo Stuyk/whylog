@@ -1,0 +1,4 @@
+# Keep LF everywhere. The docs in assets/ and skills/ are compiled into the binary with
+# include_str!, so a CRLF checkout on Windows would change what ships.
+* text=auto eol=lf
+*.ps1 text eol=crlf

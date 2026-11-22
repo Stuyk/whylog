@@ -176,6 +176,17 @@ mod tests {
     }
 
     #[test]
+    fn crlf_files_are_handled() {
+        let b = block(&cfg());
+        let crlf = inject("# Repo\r\n\r\nIntro.\r\n", &b)
+            .replace('\n', "\r\n")
+            .replace("\r\r\n", "\r\n");
+        let cur = current(&crlf).expect("block found in CRLF file");
+        assert_eq!(cur.replace("\r\n", "\n"), b);
+        assert_eq!(inject(&crlf, &b).matches(START).count(), 1);
+    }
+
+    #[test]
     fn block_has_no_em_dashes() {
         assert!(!block(&cfg()).contains('\u{2014}'));
         assert!(!BRIEFING.contains('\u{2014}'));
