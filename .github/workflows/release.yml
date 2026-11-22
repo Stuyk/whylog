@@ -65,18 +65,22 @@ jobs:
         run: |
           v="${{ needs.verify.outputs.version }}"
           base="whylog_${v}_${{ matrix.name }}"
-          mkdir -p "dist/$base"
-          cp "target/${{ matrix.target }}/release/whylog${{ matrix.exe }}" README.md LICENSE "dist/$base/"
-          cd dist
+          # Stage outside dist/ so only finished archives ever land there.
+          stage="stage/$base"
+          mkdir -p "$stage" dist
+          cp "target/${{ matrix.target }}/release/whylog${{ matrix.exe }}" README.md LICENSE "$stage/"
           if [ -n "${{ matrix.exe }}" ]; then
-            7z a -tzip "$base.zip" "./$base/*" >/dev/null
+            (cd "$stage" && 7z a -tzip "../../dist/$base.zip" whylog.exe README.md LICENSE >/dev/null)
           else
-            tar -czf "$base.tar.gz" -C "$base" whylog README.md LICENSE
+            tar -czf "dist/$base.tar.gz" -C "$stage" whylog README.md LICENSE
           fi
+          ls -la dist
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.name }}
-          path: dist/whylog_*.*
+          path: |
+            dist/*.tar.gz
+            dist/*.zip
           if-no-files-found: error
 
   publish:
@@ -89,12 +93,18 @@ jobs:
           path: dist
           merge-multiple: true
       - name: Checksums
-        run: cd dist && sha256sum whylog_* > checksums.txt && cat checksums.txt
+        run: |
+          cd dist
+          shopt -s nullglob
+          files=(whylog_*.tar.gz whylog_*.zip)
+          [ ${#files[@]} -eq 6 ] || { echo "::error::expected 6 archives, got ${#files[@]}: ${files[*]}"; ls -la; exit 1; }
+          sha256sum "${files[@]}" > checksums.txt
+          cat checksums.txt
       - name: Create release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "$GITHUB_REF_NAME" dist/* \
+          gh release create "$GITHUB_REF_NAME" dist/*.tar.gz dist/*.zip dist/checksums.txt \
             --title "whylog $GITHUB_REF_NAME" \
             --generate-notes \
             --verify-tag
