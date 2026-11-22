@@ -1,0 +1,20 @@
+[package]
+name = "whylog"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.89"
+description = "Session walkthroughs and a compacted decision log, so AI agents can read why things were decided."
+license = "MIT"
+repository = "https://github.com/stuyk/whylog"
+readme = "README.md"
+keywords = ["ai", "agents", "decisions", "adr", "cli"]
+categories = ["command-line-utilities", "development-tools"]
+
+[dependencies]
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"

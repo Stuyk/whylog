@@ -1,0 +1,98 @@
+name: release
+
+# Cut a release from the CLI:
+#   make release V=0.2.0          # bumps Cargo.toml, commits, tags v0.2.0, pushes
+# or by hand:
+#   git tag v0.2.0 && git push origin v0.2.0
+# The tag must match the version in Cargo.toml. Binaries for linux/macOS/windows
+# (amd64 + arm64) and checksums.txt are attached to the GitHub Release.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: v
+        name: Tag matches Cargo.toml
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          cargo_v="$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -n1)"
+          [[ "$tag" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]] || { echo "::error::tag $GITHUB_REF_NAME is not v<semver>"; exit 1; }
+          [ "$tag" = "$cargo_v" ] || { echo "::error::tag $tag != Cargo.toml version $cargo_v"; exit 1; }
+          echo "version=$tag" >> "$GITHUB_OUTPUT"
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo test
+      - run: make smoke
+
+  build:
+    needs: verify
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { target: x86_64-unknown-linux-musl,  os: ubuntu-latest,    name: linux_amd64,   musl: true }
+          - { target: aarch64-unknown-linux-musl, os: ubuntu-24.04-arm, name: linux_arm64,   musl: true }
+          - { target: x86_64-apple-darwin,        os: macos-latest,     name: darwin_amd64 }
+          - { target: aarch64-apple-darwin,       os: macos-latest,     name: darwin_arm64 }
+          - { target: x86_64-pc-windows-msvc,     os: windows-latest,   name: windows_amd64, exe: .exe }
+          - { target: aarch64-pc-windows-msvc,    os: windows-latest,   name: windows_arm64, exe: .exe }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - if: matrix.musl
+        run: sudo apt-get update && sudo apt-get install -y musl-tools
+      - run: cargo build --release --locked --target ${{ matrix.target }}
+      - name: Package
+        shell: bash
+        run: |
+          v="${{ needs.verify.outputs.version }}"
+          base="whylog_${v}_${{ matrix.name }}"
+          mkdir -p "dist/$base"
+          cp "target/${{ matrix.target }}/release/whylog${{ matrix.exe }}" README.md LICENSE "dist/$base/"
+          cd dist
+          if [ -n "${{ matrix.exe }}" ]; then
+            7z a -tzip "$base.zip" "./$base/*" >/dev/null
+          else
+            tar -czf "$base.tar.gz" -C "$base" whylog README.md LICENSE
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: dist/whylog_*.*
+          if-no-files-found: error
+
+  publish:
+    needs: [verify, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Checksums
+        run: cd dist && sha256sum whylog_* > checksums.txt && cat checksums.txt
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --title "whylog $GITHUB_REF_NAME" \
+            --generate-notes \
+            --verify-tag

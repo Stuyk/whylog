@@ -1,0 +1,20 @@
+# whylog
+
+> whylog is a single-binary, dependency-free Rust CLI that gives AI agents a traceable log of why. Each agent run is a session walkthrough (one markdown file: topic, notes, decisions, files touched, summary) created and edited only through whylog commands, concurrency-safe for many agents at once. Closed sessions are compacted, agent-driven, into one decision log of `**what** - *why*` bullets under dated `## Compaction` headings; compacted walkthroughs are pruned. Agents run `whylog why <area>` before changing established behaviour.
+
+Key commands: `whylog open <topic>` (prints a 4-hex handle), `whylog note|decide <handle> <text>`, `whylog close <handle> --summary … --files …`, `whylog why <terms>`, `whylog recent`, `whylog compact` (digest) and `whylog compact --apply FILE --through ID`, `whylog init` (also writes a managed block into AGENTS.md), `whylog agents [--check]`, `whylog context` (briefing for an agent starting a task), `whylog style`, `whylog guide`, `whylog skill --install`.
+
+## Docs
+
+- [README](README.md): install, usage, measured numbers, multi-agent design
+- [Agent guide](assets/GUIDE.md): the workflow (same text as `whylog guide`)
+- [Agent skill](skills/whylog/SKILL.md): Claude Code skill (`whylog skill --install`)
+
+## Contributing
+
+- [AGENTS.md](AGENTS.md): layout, commands and rules for agents changing this codebase
+- [Release workflow](.github/workflows/release.yml): pushing a `v*` tag (`make release V=X.Y.Z`) publishes all platforms
+
+## Optional
+
+- [install.sh](install.sh) / [install.ps1](install.ps1): checksum-verified installers
